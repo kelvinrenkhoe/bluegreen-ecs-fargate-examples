@@ -5,6 +5,7 @@ resource "aws_s3_bucket" "codepipeline_bucket" {
 resource "aws_s3_bucket_acl" "codepipeline_bucket" {
   bucket = aws_s3_bucket.codepipeline_bucket.id
   acl    = "private"
+  depends_on = [aws_s3_bucket_ownership_controls.s3_bucket_acl_ownership]
 }
 
 resource "aws_s3_bucket_versioning" "codepipeline_bucket" {
@@ -21,6 +22,7 @@ resource "aws_s3_bucket" "logs_bucket" {
 resource "aws_s3_bucket_acl" "logs_bucket" {
   bucket = aws_s3_bucket.logs_bucket.id
   acl    = "private"
+  depends_on = [aws_s3_bucket_ownership_controls.bucket_acl_ownership]
 }
 
 resource "aws_s3_bucket_versioning" "logs_bucket" {
@@ -54,6 +56,7 @@ resource "aws_s3_bucket" "lambda_bucket" {
 resource "aws_s3_bucket_acl" "lambda_bucket" {
   bucket = aws_s3_bucket.lambda_bucket.id
   acl    = "private"
+  depends_on = [aws_s3_bucket_ownership_controls.lambda_bucket_acl_ownership]
 }
 
 resource "aws_s3_bucket_versioning" "lambda_bucket" {
@@ -92,6 +95,7 @@ resource "aws_s3_bucket" "testdata_bucket" {
 resource "aws_s3_bucket_acl" "testdata_bucket" {
   bucket = aws_s3_bucket.testdata_bucket.id
   acl    = "private"
+  depends_on = [aws_s3_bucket_ownership_controls.test_bucket_acl_ownership]
 }
 
 resource "aws_s3_bucket_versioning" "testdata_bucket" {
@@ -101,3 +105,39 @@ resource "aws_s3_bucket_versioning" "testdata_bucket" {
   }
 }
 
+# Resource to avoid error "AccessControlListNotSupported: The bucket does not allow ACLs"
+resource "aws_s3_bucket_ownership_controls" "lambda_bucket_acl_ownership" {
+  bucket = aws_s3_bucket.codepipeline_bucket.id
+  rule {
+    object_ownership = "ObjectWriter"
+  }
+}
+
+resource "aws_s3_bucket_ownership_controls" "test_bucket_acl_ownership" {
+  bucket = aws_s3_bucket.testdata_bucket.id
+  rule {
+    object_ownership = "ObjectWriter"
+  }
+}
+
+resource "aws_s3_bucket_ownership_controls" "logs_bucket_acl_ownership" {
+  bucket = aws_s3_bucket.logs_bucket.id
+  rule {
+    object_ownership = "ObjectWriter"
+  }
+}
+
+resource "aws_s3_bucket_ownership_controls" "bucket_acl_ownership" {
+  bucket = aws_s3_bucket.lambda_bucket.id
+  rule {
+    object_ownership = "ObjectWriter"
+  }
+}
+
+
+resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_ownership" {
+  bucket = aws_s3_bucket.codepipeline_bucket.id
+  rule {
+    object_ownership = "ObjectWriter"
+  }
+}
